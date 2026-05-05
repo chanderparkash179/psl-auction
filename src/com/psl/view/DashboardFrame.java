@@ -9,13 +9,11 @@ import java.awt.*;
 
 public class DashboardFrame extends JFrame {
 
-    private final JTable table;
+    private JTable table;
+    private JTextField search;
+    private JComboBox<String> filter;
 
-    private final StatCard intl;
-    private final StatCard local;
-    private final StatCard highest;
-    private final StatCard team;
-    private final StatCard count;
+    private StatCard intl, local, highest, team, count;
 
     public DashboardFrame() {
 
@@ -28,12 +26,12 @@ public class DashboardFrame extends JFrame {
         root.setBackground(UITheme.BG);
         setContentPane(root);
 
-        // ===== CARDS =====
+        // ================= CARDS =================
         JPanel cards = new JPanel(new GridLayout(1, 5, 15, 15));
         cards.setBorder(BorderFactory.createEmptyBorder(20, 20, 10, 20));
 
-        intl = new StatCard("Top Intl Player");
-        local = new StatCard("Top National Player");
+        intl = new StatCard("Int. High Paid");
+        local = new StatCard("National High Paid");
         highest = new StatCard("Highest Paid");
         team = new StatCard("Top Spending Team");
         count = new StatCard("Max Players Team");
@@ -46,12 +44,32 @@ public class DashboardFrame extends JFrame {
 
         root.add(cards, BorderLayout.NORTH);
 
-        // ===== TABLE =====
+        // ================= CENTER =================
+        JPanel center = new JPanel(new BorderLayout());
+
+        // 🔍 SEARCH BAR BACK
+        JPanel topBar = new JPanel();
+
+        search = new JTextField(20);
+        filter = new JComboBox<>(new String[]{"All", "Sold", "Retained"});
+
+        JButton btnSearch = UITheme.button("Search", UITheme.PRIMARY);
+
+        topBar.add(search);
+        topBar.add(filter);
+        topBar.add(btnSearch);
+
+        center.add(topBar, BorderLayout.NORTH);
+
+        // TABLE
         table = new JTable();
         table.setRowHeight(28);
-        root.add(new JScrollPane(table), BorderLayout.CENTER);
 
-        // ===== BUTTONS =====
+        center.add(new JScrollPane(table), BorderLayout.CENTER);
+
+        root.add(center, BorderLayout.CENTER);
+
+        // ================= ACTIONS =================
         JPanel actions = new JPanel();
 
         JButton btnTeams = UITheme.button("Teams", UITheme.PRIMARY);
@@ -66,6 +84,8 @@ public class DashboardFrame extends JFrame {
 
         root.add(actions, BorderLayout.SOUTH);
 
+        // ================= EVENTS =================
+        btnSearch.addActionListener(e -> loadTable());
         btnTeams.addActionListener(e -> new TeamFrame().setVisible(true));
         btnPlayers.addActionListener(e -> new PlayerFrame().setVisible(true));
         btnDelete.addActionListener(e -> deleteAuction());
@@ -95,7 +115,12 @@ public class DashboardFrame extends JFrame {
     }
 
     private void loadTable() {
-        table.setModel(new AuctionDAO().getAuctionTable(null, "All"));
+        table.setModel(
+                new AuctionDAO().getAuctionTable(
+                        search.getText(),
+                        filter.getSelectedItem().toString()
+                )
+        );
     }
 
     private void deleteAuction() {

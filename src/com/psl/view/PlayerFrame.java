@@ -35,15 +35,22 @@ public class PlayerFrame extends JFrame {
         table.setRowHeight(28);
         root.add(new JScrollPane(table), BorderLayout.CENTER);
 
+
         JPanel actions = new JPanel();
+
 
         JButton add = UITheme.button("Add", UITheme.SUCCESS);
         JButton edit = UITheme.button("Edit", UITheme.PRIMARY);
         JButton del = UITheme.button("Delete", UITheme.DANGER);
+        JButton view = UITheme.button("View", UITheme.PRIMARY);
+        this.viewBtnStyle(view);
 
+        actions.add(view);
         actions.add(add);
         actions.add(edit);
         actions.add(del);
+
+        view.setEnabled(false);
 
         root.add(actions, BorderLayout.SOUTH);
 
@@ -51,6 +58,26 @@ public class PlayerFrame extends JFrame {
         add.addActionListener(e -> new PlayerFormFrame(null, this).setVisible(true));
         edit.addActionListener(e -> edit());
         del.addActionListener(e -> delete());
+        table.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                view.setEnabled(table.getSelectedRow() != -1);
+            }
+        });
+        view.addActionListener(e -> {
+
+            int row = table.getSelectedRow();
+
+            if (row == -1) {
+                JOptionPane.showMessageDialog(this, "Please select a player first!");
+                return;
+            }
+
+            int playerId = Integer.parseInt(table.getValueAt(row, 0).toString());
+            String playerName = table.getValueAt(row, 1).toString();
+
+            new PlayerCareerDialog(this, playerId, playerName).setVisible(true);
+        });
+
 
         load();
     }
@@ -79,5 +106,11 @@ public class PlayerFrame extends JFrame {
 
     public void refresh() {
         load();
+    }
+
+    public void viewBtnStyle(JButton view) {
+        view.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        view.setBackground(new Color(52, 152, 219));
+        view.setForeground(Color.WHITE);
     }
 }

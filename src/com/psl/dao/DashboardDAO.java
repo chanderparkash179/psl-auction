@@ -12,11 +12,17 @@ public class DashboardDAO {
             ResultSet rs = con.createStatement().executeQuery(sql);
 
             if (rs.next()) {
-                return new String[]{
-                        rs.getString(1),
-                        rs.getString(2) == null ? "0" : rs.getString(2)
-                };
+
+                String name = rs.getString(1);
+
+                double val = rs.getDouble(2);
+
+                // ✅ FIX: round to 2 decimal
+                String formatted = String.format("%.2f", val);
+
+                return new String[]{name, formatted};
             }
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -78,28 +84,4 @@ public class DashboardDAO {
                 """);
     }
 
-    // NEW (Retention)
-    public String[] topIntlRetention() {
-        return fetch("""
-                    SELECT TOP 1 p.Player_Name, a.Final_Price
-                    FROM Auction a
-                    JOIN Player p ON a.Player_ID=p.Player_ID
-                    WHERE p.Nationality!='Pakistan'
-                    AND a.Acquisition_Type='Retention'
-                    AND a.IsDeleted=0
-                    ORDER BY a.Final_Price DESC
-                """);
-    }
-
-    public String[] topLocalRetention() {
-        return fetch("""
-                    SELECT TOP 1 p.Player_Name, a.Final_Price
-                    FROM Auction a
-                    JOIN Player p ON a.Player_ID=p.Player_ID
-                    WHERE p.Nationality='Pakistan'
-                    AND a.Acquisition_Type='Retention'
-                    AND a.IsDeleted=0
-                    ORDER BY a.Final_Price DESC
-                """);
-    }
 }
