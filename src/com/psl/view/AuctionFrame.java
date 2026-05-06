@@ -4,7 +4,6 @@ import com.psl.config.DBConnection;
 import com.psl.dao.AuctionDAO;
 
 import javax.swing.*;
-import java.awt.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;

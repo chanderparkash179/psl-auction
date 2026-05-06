@@ -110,8 +110,6 @@ public class AuctionEditDialog extends JDialog {
     private void update() {
 
         try {
-            Connection con = DBConnection.getConnection();
-
             int playerId = getId("Player", playerBox.getSelectedItem().toString());
             int teamId = getId("Team", teamBox.getSelectedItem().toString());
             int categoryId = getId("Category", categoryBox.getSelectedItem().toString());

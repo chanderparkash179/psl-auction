@@ -9,10 +9,12 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 
 public class AuctionDAO {
+    public DefaultTableModel getAuctionTableCustom(String sql) {
+        return buildTable(sql);
+    }
 
     // ================= UPDATE AUCTION =================
-    public void updateAuction(int auctionId, int playerId, int teamId, int categoryId,
-                              double price, String round, String type, String status) {
+    public void updateAuction(int auctionId, int playerId, int teamId, int categoryId, double price, String round, String type, String status) {
 
         try {
             Connection con = DBConnection.getConnection();

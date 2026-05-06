@@ -8,7 +8,6 @@ import javax.swing.table.DefaultTableModel;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 
 public class PlayerDAO {
 
@@ -74,33 +73,6 @@ public class PlayerDAO {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    private DefaultTableModel buildTable(String sql) {
-        DefaultTableModel model = new DefaultTableModel();
-
-        try {
-            Connection con = DBConnection.getConnection();
-            ResultSet rs = con.createStatement().executeQuery(sql);
-
-            ResultSetMetaData md = rs.getMetaData();
-            int cols = md.getColumnCount();
-
-            for (int i = 1; i <= cols; i++)
-                model.addColumn(md.getColumnName(i));
-
-            while (rs.next()) {
-                Object[] row = new Object[cols];
-                for (int i = 1; i <= cols; i++)
-                    row[i - 1] = rs.getObject(i);
-                model.addRow(row);
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return model;
     }
 
     public PlayerCareer getByPlayerId(int playerId) {
