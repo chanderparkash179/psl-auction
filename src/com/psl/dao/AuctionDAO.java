@@ -10,6 +10,43 @@ import java.sql.ResultSetMetaData;
 
 public class AuctionDAO {
 
+    // ================= UPDATE AUCTION =================
+    public void updateAuction(int auctionId, int playerId, int teamId, int categoryId,
+                              double price, String round, String type, String status) {
+
+        try {
+            Connection con = DBConnection.getConnection();
+
+            String sql = """
+                    UPDATE Auction SET
+                    Player_ID=?,
+                    Team_ID=?,
+                    Category_ID=?,
+                    Final_Price=?,
+                    Auction_Round=?,
+                    Acquisition_Type=?,
+                    Status=?
+                    WHERE Auction_ID=? AND IsDeleted=0
+                    """;
+
+            PreparedStatement ps = con.prepareStatement(sql);
+
+            ps.setInt(1, playerId);
+            ps.setInt(2, teamId);
+            ps.setInt(3, categoryId);
+            ps.setDouble(4, price);
+            ps.setString(5, round);
+            ps.setString(6, type);
+            ps.setString(7, status);
+            ps.setInt(8, auctionId);
+
+            ps.executeUpdate();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     public String getTopInternational() {
         String sql = "SELECT TOP 1 p.Player_Name FROM Auction a " +
                 "JOIN Player p ON a.Player_ID = p.Player_ID " +

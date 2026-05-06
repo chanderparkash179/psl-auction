@@ -2,6 +2,7 @@ package com.psl.view;
 
 import com.psl.dao.DashboardDAO;
 import com.psl.dao.AuctionDAO;
+import com.psl.form.AuctionEditDialog;
 import com.psl.util.UITheme;
 
 import javax.swing.*;
@@ -89,9 +90,24 @@ public class DashboardFrame extends JFrame {
         btnTeams.addActionListener(e -> new TeamFrame().setVisible(true));
         btnPlayers.addActionListener(e -> new PlayerFrame().setVisible(true));
         btnDelete.addActionListener(e -> deleteAuction());
+        btnEdit.addActionListener(e -> editAuction());
 
         loadStats();
         loadTable();
+    }
+
+    private void editAuction() {
+
+        int row = table.getSelectedRow();
+
+        if (row == -1) {
+            JOptionPane.showMessageDialog(this, "Select a record first!");
+            return;
+        }
+
+        int auctionId = Integer.parseInt(table.getValueAt(row, 0).toString());
+
+        new AuctionEditDialog(this, auctionId, this).setVisible(true);
     }
 
     private void loadStats() {

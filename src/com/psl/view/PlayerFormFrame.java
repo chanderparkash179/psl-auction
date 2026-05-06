@@ -3,6 +3,7 @@ package com.psl.view;
 import com.psl.dao.PlayerDAO;
 import com.psl.model.Player;
 import com.psl.util.UITheme;
+import com.psl.util.Validator;
 
 import javax.swing.*;
 import java.awt.*;
@@ -22,21 +23,28 @@ public class PlayerFormFrame extends JFrame {
 
         setTitle("Player Form");
         setSize(400, 300);
-        setLayout(new GridLayout(4, 1, 10, 10));
+        setLocationRelativeTo(null);
+
+        JPanel panel = new JPanel(new GridLayout(6, 1, 10, 10));
+        panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
         name = new JTextField();
         nationality = new JTextField();
         role = new JTextField();
 
-        add(new JLabel("Name"));
-        add(name);
-        add(new JLabel("Nationality"));
-        add(nationality);
-        add(new JLabel("Role"));
-        add(role);
+        panel.add(label("Player Name"));
+        panel.add(name);
 
-        JButton btnSave = UITheme.button("Save", UITheme.SUCCESS);
-        add(btnSave);
+        panel.add(label("Nationality"));
+        panel.add(nationality);
+
+        panel.add(label("Role"));
+        panel.add(role);
+
+        JButton btnSave = UITheme.button("Save Player", UITheme.SUCCESS);
+        panel.add(btnSave);
+
+        add(panel);
 
         if (p != null) {
             name.setText(p.getPlayerName());
@@ -47,15 +55,39 @@ public class PlayerFormFrame extends JFrame {
         btnSave.addActionListener(e -> save());
     }
 
+    private JLabel label(String text) {
+        JLabel lbl = new JLabel(text);
+        lbl.setFont(UITheme.NORMAL);
+        return lbl;
+    }
+
     private void save() {
+
+        String n = name.getText();
+        String nat = nationality.getText();
+        String r = role.getText();
+
+        if (Validator.isEmpty(n) || Validator.isEmpty(nat) || Validator.isEmpty(r)) {
+            JOptionPane.showMessageDialog(this, "All fields are required!");
+            return;
+        }
+
+        PlayerDAO dao = new PlayerDAO();
+
+        int id = (player == null) ? 0 : player.getPlayerId();
+
+        if (dao.existsByName(n, id)) {
+            JOptionPane.showMessageDialog(this, "Player already exists!");
+            return;
+        }
 
         if (player == null) player = new Player();
 
-        player.setPlayerName(name.getText());
-        player.setNationality(nationality.getText());
-        player.setPrimaryRole(role.getText());
+        player.setPlayerName(n);
+        player.setNationality(nat);
+        player.setPrimaryRole(r);
 
-        new PlayerDAO().save(player);
+        dao.save(player);
 
         parent.refresh();
         dispose();

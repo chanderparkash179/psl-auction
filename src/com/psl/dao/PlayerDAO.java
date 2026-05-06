@@ -133,6 +133,37 @@ public class PlayerDAO {
         return pc;
     }
 
+    public boolean existsByName(String name, int excludeId) {
+
+        try {
+            Connection con = DBConnection.getConnection();
+
+            String sql = "SELECT COUNT(*) FROM Player WHERE Player_Name=? AND IsDeleted=0";
+
+            if (excludeId != 0) {
+                sql += " AND Player_ID != ?";
+            }
+
+            PreparedStatement ps = con.prepareStatement(sql);
+            ps.setString(1, name);
+
+            if (excludeId != 0) {
+                ps.setInt(2, excludeId);
+            }
+
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
+
     public String getCurrentTeam(int playerId) {
 
         String team = "-";
@@ -187,7 +218,7 @@ public class PlayerDAO {
             e.printStackTrace();
         }
     }
-    
+
     public DefaultTableModel getPlayers(String search, String team) {
 
         String[] cols = {"ID", "Name", "Nationality", "Role"};
