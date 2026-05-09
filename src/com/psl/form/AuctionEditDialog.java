@@ -6,99 +6,171 @@ import com.psl.view.DashboardFrame;
 
 import javax.swing.*;
 import java.awt.*;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 
 public class AuctionEditDialog extends JDialog {
 
-    private JComboBox<String> playerBox, teamBox, categoryBox, statusBox, roundBox;
-    private JTextField priceField;
+    private final JComboBox<String> playerBox;
+    private final JComboBox<String> teamBox;
+    private final JComboBox<String> categoryBox;
+    private final JComboBox<String> statusBox;
+    private final JComboBox<String> roundBox;
 
-    private int auctionId;
-    private DashboardFrame parent;
+    private final JTextField priceField;
 
-    public AuctionEditDialog(JFrame parentFrame, int auctionId, DashboardFrame parent) {
+    private final int auctionId;
+
+    private final DashboardFrame parent;
+
+    public AuctionEditDialog(
+            JFrame parentFrame,
+            int auctionId,
+            DashboardFrame parent
+    ) {
+
         super(parentFrame, "Edit Auction", true);
 
         this.auctionId = auctionId;
         this.parent = parent;
 
-        setSize(450, 350);
+        setSize(500, 400);
         setLocationRelativeTo(parentFrame);
-        setLayout(new GridLayout(7, 2, 10, 10));
+
+        JPanel panel = new JPanel(
+                new GridLayout(7, 2, 10, 10)
+        );
+
+        panel.setBorder(
+                BorderFactory.createEmptyBorder(20, 20, 20, 20)
+        );
 
         playerBox = new JComboBox<>();
+
         teamBox = new JComboBox<>();
+
         categoryBox = new JComboBox<>();
-        statusBox = new JComboBox<>(new String[]{"Sold", "Retained", "Unsold"});
-        roundBox = new JComboBox<>(new String[]{"Pre-Auction", "Round 1", "Round 2"});
+
+        statusBox = new JComboBox<>(
+                new String[]{
+                        "Sold",
+                        "Retained",
+                        "Unsold"
+                }
+        );
+
+        roundBox = new JComboBox<>(
+                new String[]{
+                        "Pre-Auction",
+                        "Round 1",
+                        "Round 2"
+                }
+        );
+
         priceField = new JTextField();
 
-        add(new JLabel("Player"));
-        add(playerBox);
-        add(new JLabel("Team"));
-        add(teamBox);
-        add(new JLabel("Category"));
-        add(categoryBox);
-        add(new JLabel("Status"));
-        add(statusBox);
-        add(new JLabel("Round"));
-        add(roundBox);
-        add(new JLabel("Price"));
-        add(priceField);
+        panel.add(new JLabel("Player"));
+        panel.add(playerBox);
 
-        JButton save = new JButton("Update");
-        add(save);
+        panel.add(new JLabel("Team"));
+        panel.add(teamBox);
 
-        loadData();
-        loadAuction();
+        panel.add(new JLabel("Category"));
+        panel.add(categoryBox);
 
-        save.addActionListener(e -> update());
+        panel.add(new JLabel("Status"));
+        panel.add(statusBox);
+
+        panel.add(new JLabel("Round"));
+        panel.add(roundBox);
+
+        panel.add(new JLabel("Price"));
+        panel.add(priceField);
+
+        JButton btnUpdate = new JButton("Update Auction");
+
+        panel.add(btnUpdate);
+
+        add(panel);
+
+        loadDropdowns();
+        loadAuctionData();
+
+        btnUpdate.addActionListener(e -> updateAuction());
     }
 
-    private void loadData() {
+    private void loadDropdowns() {
+
         try {
+
             Connection con = DBConnection.getConnection();
 
-            ResultSet p = con.createStatement().executeQuery("SELECT Player_Name FROM Player WHERE IsDeleted=0");
-            while (p.next()) playerBox.addItem(p.getString(1));
+            ResultSet p = con.createStatement().executeQuery(
+                    "SELECT Player_Name FROM Player WHERE IsDeleted=0"
+            );
 
-            ResultSet t = con.createStatement().executeQuery("SELECT Team_Name FROM Team WHERE IsDeleted=0");
-            while (t.next()) teamBox.addItem(t.getString(1));
+            while (p.next()) {
+                playerBox.addItem(p.getString(1));
+            }
 
-            ResultSet c = con.createStatement().executeQuery("SELECT Category_Name FROM Category WHERE IsDeleted=0");
-            while (c.next()) categoryBox.addItem(c.getString(1));
+            ResultSet t = con.createStatement().executeQuery(
+                    "SELECT Team_Name FROM Team WHERE IsDeleted=0"
+            );
+
+            while (t.next()) {
+                teamBox.addItem(t.getString(1));
+            }
+
+            ResultSet c = con.createStatement().executeQuery(
+                    "SELECT Category_Name FROM Category WHERE IsDeleted=0"
+            );
+
+            while (c.next()) {
+                categoryBox.addItem(c.getString(1));
+            }
 
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    private void loadAuction() {
+    private void loadAuctionData() {
 
         try {
+
             Connection con = DBConnection.getConnection();
 
             PreparedStatement ps = con.prepareStatement(
-                    """
-                            SELECT p.Player_Name, t.Team_Name, c.Category_Name,
-                                   a.Final_Price, a.Status, a.Auction_Round
-                            FROM Auction a
-                            JOIN Player p ON a.Player_ID=p.Player_ID
-                            JOIN Team t ON a.Team_ID=t.Team_ID
-                            JOIN Category c ON a.Category_ID=c.Category_ID
-                            WHERE a.Auction_ID=?
-                            """
+                    "SELECT p.Player_Name, " +
+                            "t.Team_Name, " +
+                            "c.Category_Name, " +
+                            "a.Final_Price, " +
+                            "a.Status, " +
+                            "a.Auction_Round " +
+                            "FROM Auction a " +
+                            "JOIN Player p ON a.Player_ID = p.Player_ID " +
+                            "JOIN Team t ON a.Team_ID = t.Team_ID " +
+                            "JOIN Category c ON a.Category_ID = c.Category_ID " +
+                            "WHERE a.Auction_ID=?"
             );
 
             ps.setInt(1, auctionId);
+
             ResultSet rs = ps.executeQuery();
 
             if (rs.next()) {
+
                 playerBox.setSelectedItem(rs.getString(1));
+
                 teamBox.setSelectedItem(rs.getString(2));
+
                 categoryBox.setSelectedItem(rs.getString(3));
+
                 priceField.setText(rs.getString(4));
+
                 statusBox.setSelectedItem(rs.getString(5));
+
                 roundBox.setSelectedItem(rs.getString(6));
             }
 
@@ -107,12 +179,27 @@ public class AuctionEditDialog extends JDialog {
         }
     }
 
-    private void update() {
+    private void updateAuction() {
 
         try {
-            int playerId = getId("Player", playerBox.getSelectedItem().toString());
-            int teamId = getId("Team", teamBox.getSelectedItem().toString());
-            int categoryId = getId("Category", categoryBox.getSelectedItem().toString());
+
+            int playerId = getId(
+                    "Player",
+                    "Player_Name",
+                    playerBox.getSelectedItem().toString()
+            );
+
+            int teamId = getId(
+                    "Team",
+                    "Team_Name",
+                    teamBox.getSelectedItem().toString()
+            );
+
+            int categoryId = getId(
+                    "Category",
+                    "Category_Name",
+                    categoryBox.getSelectedItem().toString()
+            );
 
             new AuctionDAO().updateAuction(
                     auctionId,
@@ -125,19 +212,46 @@ public class AuctionEditDialog extends JDialog {
                     statusBox.getSelectedItem().toString()
             );
 
-            parent.dispose();
-            new DashboardFrame().setVisible(true);
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Auction Updated Successfully!"
+            );
+
             dispose();
 
+            parent.dispose();
+
+            new DashboardFrame().setVisible(true);
+
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Error updating!");
+
+            e.printStackTrace();
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Error Updating Auction!"
+            );
         }
     }
 
-    private int getId(String table, String name) throws Exception {
+    private int getId(
+            String table,
+            String column,
+            String value
+    ) throws Exception {
+
         Connection con = DBConnection.getConnection();
-        ResultSet rs = con.createStatement()
-                .executeQuery("SELECT " + table + "_ID FROM " + table + " WHERE " + table + "_Name='" + name + "'");
+
+        PreparedStatement ps = con.prepareStatement(
+                "SELECT " + table + "_ID FROM " +
+                        table +
+                        " WHERE " + column + "=?"
+        );
+
+        ps.setString(1, value);
+
+        ResultSet rs = ps.executeQuery();
+
         return rs.next() ? rs.getInt(1) : -1;
     }
 }
